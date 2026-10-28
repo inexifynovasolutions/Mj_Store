@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - The Medical Store</title>
+    
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2967/2967357.png">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0b2b5c, #1a56db);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            direction: ltr;
+        }
+
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-box img { width: 80px; height: 80px; margin-bottom: 15px; }
+
+        .login-box h2 {
+            color: #0b2b5c;
+            margin-bottom: 30px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .form-group { margin-bottom: 20px; text-align: left; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: 0.3s;
+            direction: ltr;
+        }
+
+        .form-group input:focus {
+            border-color: #1a56db;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(26,86,219,0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1a56db, #0b2b5c);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px -5px rgba(26,86,219,0.4);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(26,86,219,0.5);
+        }
+
+        #errorMsg {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+            background: #fee2e2;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+
+        .back-home-btn:hover {
+            background: white;
+            color: #0b2b5c;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/2967/2967357.png" alt="Logo">
+            <h2>Admin Panel Login</h2>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="adminEmail" placeholder="admin@themedicalstore.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Login to Dashboard</button>
+                <div id="errorMsg">Invalid email or password!</div>
+            </form>
+        </div>
+
+        <!-- YAHAN FIX KIYA GAYA HAI (Absolute Path /) -->
+        <a href="/" class="back-home-btn">
+            <i class="fas fa-arrow-left"></i> Back to Home Page
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://exbxkmwdhzcnbxajsqrt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Va0PQhI68qCpe-44Ok3zvA_7980Yu-6';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const btn = document.querySelector('.login-btn');
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                errorMsg.innerText = "Error: " + error.message;
+                errorMsg.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login to Dashboard';
+                btn.disabled = false;
+            } else {
+                window.location.href = "dashboard.html"; 
+            }
+        });
+    </script>
+</body>
+</html>

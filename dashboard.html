@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - The Medical Store</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #f4f7fc; color: #1e293b; direction: ltr; text-align: left; }
+        
+        .admin-header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom: 2px solid #1a56db; }
+        .admin-header h1 { color: #0b2b5c; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .admin-header h1 img { width: 40px; border-radius: 50%; }
+        .logout-btn { background: #fee2e2; color: #ef4444; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .logout-btn:hover { background: #fecaca; }
+
+        .notification-bell { position: relative; cursor: pointer; font-size: 22px; color: #64748b; margin-right: 20px; transition: 0.2s; }
+        .notification-bell:hover { color: #1a56db; }
+        .bell-badge { position: absolute; top: -5px; right: -8px; background: #ef4444; color: white; font-size: 11px; padding: 2px 6px; border-radius: 50%; font-weight: bold; display: none; }
+        .bell-ring { animation: ring 1s ease-in-out; }
+        @keyframes ring { 0% { transform: rotate(0); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } 60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); } 100% { transform: rotate(0); } }
+
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        .tabs { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; overflow-x: auto; white-space: nowrap; }
+        .tab-btn { background: none; border: none; padding: 12px 25px; font-size: 16px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; }
+        .tab-btn:hover { color: #1a56db; }
+        .tab-btn.active { color: #1a56db; border-bottom-color: #1a56db; }
+
+        .section-box { display: none; animation: fadeIn 0.3s; }
+        .section-box.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .metric-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; border-left: 5px solid #1a56db; cursor: pointer; transition: 0.2s; }
+        .metric-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .metric-card h3 { font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .metric-card p { font-size: 32px; font-weight: 700; color: #0b2b5c; }
+        
+        .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .form-row { display: flex; gap: 20px; flex-wrap: wrap; }
+        .form-group { margin-bottom: 20px; flex: 1; min-width: 180px; position: relative;}
+        .form-group label { display: block; margin-bottom: 8px; color: #475569; font-weight: 600; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 15px; direction: ltr; text-align: left; }
+        .form-group input[type="file"] { background: #f8fafc; padding: 10px; }
+        .form-group input[type="checkbox"] { width: auto; margin-right: 10px; transform: scale(1.3); cursor: pointer; }
+        .form-group input[type="color"] { width: 100%; height: 45px; padding: 5px; cursor: pointer; }
+        
+        .save-btn { background: #10b981; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        
+        .edit-mode-banner { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; color: #92400e; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; display: none; align-items: center; gap: 10px; }
+        .edit-mode-banner.show { display: flex; }
+        .cancel-edit-btn { background: #ef4444; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: auto; font-size: 13px; }
+        
+        .order-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; border-left: 5px solid #1a56db; }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px; }
+        .order-status { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-paid { background: #dbeafe; color: #1e40af; }
+        .status-delivered { background: #d1fae5; color: #065f46; }
+        .order-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;}
+        .action-btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;}
+        .btn-paid { background: #3b82f6; color: white; }
+        .btn-delivered { background: #10b981; color: white; }
+        .btn-revert { background: #64748b; color: white; }
+        .btn-view-img { background: #94a3b8; color: white; text-decoration: none; }
+        .btn-print { background: #0b2b5c; color: white; }
+
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; text-align: center; position: relative; transition: 0.2s; }
+        .product-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: #1a56db; }
+        .product-card img { width: 100px; height: 100px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; }
+        .product-card h4 { color: #0b2b5c; font-size: 16px; margin-bottom: 5px; }
+        .product-card p { color: #1a56db; font-weight: bold; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 5px; }
+        .badge-available { background: #d1fae5; color: #065f46; }
+        .badge-sold { background: #fee2e2; color: #991b1b; }
+        
+        .product-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
+        .prod-action-btn { flex: 1; padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-edit { background: #dbeafe; color: #1e40af; }
+        .btn-edit:hover { background: #3b82f6; color: white; }
+        .btn-delete { background: #fee2e2; color: #991b1b; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+
+        .section-divider { border-top: 1px dashed #cbd5e1; margin: 25px 0; }
+        .sub-heading { color: #0b2b5c; font-size: 18px; margin-bottom: 15px; font-weight: 600; }
+
+        .preview-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .preview-box img { width: 60px; height: 60px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; background: white; }
+        .preview-box span { font-size: 13px; color: #475569; word-break: break-all; flex: 1; }
+        .remove-btn { background: #fee2e2; color: #ef4444; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.2s; }
+        .remove-btn:hover { background: #ef4444; color: white; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: white; width: 100%; max-width: 1000px; border-radius: 16px; padding: 30px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-header h2 { color: #0b2b5c; font-size: 22px; }
+        .close-btn { background: #fee2e2; color: #ef4444; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .filter-row { display: flex; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; align-items: flex-end; flex-wrap: wrap;}
+        .filter-row .form-group { margin-bottom: 0; min-width: 150px; }
+        
+        .accounting-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .accounting-table th, .accounting-table td { padding: 10px 8px; border: 1px solid #e2e8f0; text-align: left; }
+        .accounting-table th { background: #f8fafc; color: #0b2b5c; font-weight: 700; }
+        .accounting-table tr:hover { background: #f8fafc; }
+        .accounting-table tfoot td { background: #e2e8f0; font-weight: 800; color: #0b2b5c; font-size: 14px; border-top: 2px solid #0b2b5c; }
+        
+        .costing-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; }
+        .costing-table th, .costing-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 14px; }
+        .costing-table th { background: #0b2b5c; color: white; font-weight: 600; }
+        .profit-text { color: #10b981; font-weight: 700; }
+        .loss-text { color: #ef4444; font-weight: 700; }
+
+        .message-card { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 5px solid #1a56db; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .message-card h4 { color: #0b2b5c; margin-bottom: 5px; }
+        .message-card p { color: #475569; font-size: 14px; margin-bottom: 5px; }
+        .message-card small { color: #94a3b8; font-size: 12px; }
+        .job-admin-card { background: white; border: 1px solid #e2e8f0; border-left: 5px solid #f59e0b; padding: 20px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+
+        /* PRINT SLIP STYLES */
+        .print-slip { background: white; padding: 20px; border: 1px dashed #cbd5e1; width: 300px; margin: 0 auto; font-family: 'Courier New', monospace; color: black; }
+        .print-slip h2 { text-align: center; font-size: 18px; margin-bottom: 5px; }
+        .print-slip p { font-size: 12px; margin: 3px 0; }
+        .print-slip hr { border: 1px dashed #000; margin: 10px 0; }
+        .print-slip table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 10px; }
+        .print-slip th { text-align: left; border-bottom: 1px solid #000; padding-bottom: 5px; }
+        .print-slip td { padding: 3px 0; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #slipModal, #slipModal * { visibility: visible; }
+            #slipModal { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+            .modal-header, .close-btn, .print-btn { display: none !important; }
+        }
+
+        /* Banner Manager CSS */
+        .banner-list-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; background: #f8fafc; }
+        .banner-list-item img { height: 60px; width: 120px; object-fit: cover; border-radius: 4px; }
+
+        /* Customers Table CSS */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .data-table th, .data-table td { padding: 12px; border: 1px solid #e2e8f0; text-align: left; }
+        .data-table th { background: #0b2b5c; color: white; font-weight: 600; }
+        .data-table tr:hover { background: #f8fafc; }
+    </style>
+</head>
+<body>
+
+    <header class="admin-header">
+        <div style="display:flex; align-items:center; gap:20px;">
+            <h1><img src="https://cdn-icons-png.flaticon.com/512/2967/2967357.png"> The Medical Store - Admin</h1>
+            <div class="notification-bell" id="bellIcon">
+                <i class="fas fa-bell"></i>
+                <span class="bell-badge" id="bellBadge">0</span>
+            </div>
+        </div>
+        <a href="admin.html" onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </header>
+
+    <div class="container">
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="showSection('orders')">🛒 Orders</button>
+            <button class="tab-btn" onclick="showSection('products')">📦 Products</button>
+            <button class="tab-btn" onclick="showSection('customers')">👥 Customers</button>
+            <button class="tab-btn" onclick="showSection('banners')">🖼️ Banner Manager</button>
+            <button class="tab-btn" onclick="showSection('jobs')">💼 Jobs</button>
+            <button class="tab-btn" onclick="showSection('messages')">📩 Messages</button>
+            <button class="tab-btn" onclick="showSection('settings')">⚙️ Settings</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard-section" class="section-box active">
+            <div class="metric-grid">
+                <div class="metric-card" onclick="showSection('orders')"><h3>Total Orders</h3><p id="metricTotalOrders">0</p></div>
+                <div class="metric-card" style="border-left-color: #10b981;" onclick="openAccountingModal()"><h3>Total Revenue <i class="fas fa-external-link-alt" style="font-size:12px; color:#94a3b8;"></i></h3><p id="metricTotalRevenue">Rs. 0</p></div>
+                <div class="metric-card" style="border-left-color: #f59e0b;" onclick="showSection('orders')"><h3>Pending Orders</h3><p id="metricPendingOrders">0</p></div>
+                <div class="metric-card" style="border-left-color: #3b82f6;" onclick="showSection('orders')"><h3>Delivered</h3><p id="metricDeliveredOrders">0</p></div>
+            </div>
+
+            <div class="box" style="display:flex; gap: 15px; align-items: center; justify-content: space-between;">
+                <h2 style="color: #0b2b5c; font-size: 20px;">📥 Import / Export Data</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="exportCSV('products')" class="save-btn" style="background: #1a56db;"><i class="fas fa-download"></i> Export Products</button>
+                    <button onclick="exportCSV('orders')" class="save-btn" style="background: #0b2b5c;"><i class="fas fa-download"></i> Export Orders</button>
+                </div>
+            </div>
+
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 15px;">📦 Products & Their Costing</h2>
+                <div style="overflow-x: auto;">
+                    <table class="costing-table" id="dashboardCostingList">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Orig. Cost</th>
+                                <th>Trade Disc %</th>
+                                <th>Cash Disc %</th>
+                                <th>Net Cost (Box)</th>
+                                <th>Box Qty</th>
+                                <th>Unit Cost</th>
+                                <th>Sell Price (Box)</th>
+                                <th>Unit Sell Price</th>
+                                <th>Profit / Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ORDERS -->
+        <div id="orders-section" class="section-box">
+            <div class="box" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color: #0b2b5c; font-size: 20px;">Recent Orders</h2>
+                <button onclick="loadData()" class="save-btn" style="background:#1a56db; padding: 8px 15px; font-size:14px;"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+            <div id="ordersList"></div>
+        </div>
+
+        <!-- PRODUCTS -->
+        <div id="products-section" class="section-box">
+            <div class="box">
+                <h2 id="productFormTitle" style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Add New Product</h2>
+                
+                <div class="edit-mode-banner" id="editModeBanner">
+                    <i class="fas fa-edit"></i>
+                    <span>Edit Mode: <strong id="editingProductName"></strong></span>
+                    <button class="cancel-edit-btn" onclick="cancelEdit()"><i class="fas fa-times"></i> Cancel Edit</button>
+                </div>
+                
+                <form id="productForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>Product Name</label><input type="text" id="prodName" required></div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="prodCategory" required>
+                                <option value="Medicine">💊 Medicine</option>
+                                <option value="Supplements">🧪 Supplements</option>
+                                <option value="Health">🩺 Health Items</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">💸 Purchasing / Costing Detail (Khareedari)</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Original Cost Price (Rs.) *</label><input type="number" id="prodCostPrice" required placeholder="Company ka bill" oninput="calculateCosts()"></div>
+                        <div class="form-group"><label>Trade Discount %</label><input type="number" id="prodTradeDiscount" placeholder="e.g. 15" min="0" max="99" oninput="calculateCosts()"></div>
+                        <div class="form-group"><label>Cash Discount %</label><input type="number" id="prodCashDiscount" placeholder="e.g. 5" min="0" max="99" oninput="calculateCosts()"></div>
+                        <div class="form-group"><label>Net Cost / Actual Cost</label><input type="number" id="prodActualCost" readonly style="background:#e2e8f0; font-weight:bold; color:#0b2b5c;"></div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">🏷️ Selling Detail (Farokht)</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Box/Packet Quantity (Units) *</label><input type="number" id="prodBoxQty" required placeholder="e.g. 10 tablets" min="1" value="1" oninput="calculateCosts()"></div>
+                        <div class="form-group"><label>Current Selling Price (Box) *</label><input type="number" id="prodPrice" required placeholder="Poora box kitne ka?" oninput="calculateCosts()"></div>
+                        <div class="form-group"><label>Old Price (Optional)</label><input type="number" id="prodOldPrice"></div>
+                        <div class="form-group"><label>Selling Discount % (Optional)</label><input type="number" id="prodDiscount" placeholder="e.g. 20" min="0" max="99"></div>
+                    </div>
+                    
+                    <div class="form-row" style="background: #ecfdf5; padding: 15px; border-radius: 10px; border: 1px solid #10b981; margin-bottom: 20px;">
+                        <div class="form-group" style="margin-bottom:0;"><label style="color:#065f46;">1 Unit (Tablet) Cost:</label><input type="text" id="displayUnitCost" readonly style="background:transparent; border:none; font-size:20px; font-weight:800; color:#047857;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label style="color:#065f46;">1 Unit (Tablet) Selling Price:</label><input type="text" id="displayUnitPrice" readonly style="background:transparent; border:none; font-size:20px; font-weight:800; color:#047857;"></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Stock Status</label>
+                            <select id="prodStockStatus" required>
+                                <option value="available">Available (In Stock)</option>
+                                <option value="sold">Out of Stock (Sold)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Image Upload <span id="imageOptionalNote" style="color:#94a3b8; font-weight:400; font-size:13px;"></span></label>
+                            <input type="file" id="prodImage" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                        <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                            <input type="checkbox" id="prodShowDiscount" style="width: 20px; height: 20px;">
+                            <label for="prodShowDiscount" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #1a56db;">
+                                Show Discount Badge on Site (Discount ka tag site par dikhayein)
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="save-btn" id="saveProdBtn">Save Product</button>
+                </form>
+            </div>
+            <div class="box">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h2 style="color: #0b2b5c; font-size: 20px;">Current Products</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="sortProducts('asc')" class="save-btn" style="background:#3b82f6; padding: 8px 15px; font-size:14px;"><i class="fas fa-sort-alpha-down"></i> A-Z</button>
+                        <button onclick="sortProducts('desc')" class="save-btn" style="background:#3b82f6; padding: 8px 15px; font-size:14px;"><i class="fas fa-sort-alpha-up"></i> Z-A</button>
+                    </div>
+                </div>
+                <div class="product-grid" id="productList"></div>
+            </div>
+        </div>
+
+        <!-- CUSTOMERS & VISITORS -->
+        <div id="customers-section" class="section-box">
+            <div class="box">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                    <h2 style="color: #0b2b5c; font-size: 20px;">Registered Customers (Clients)</h2>
+                    <button onclick="loadCustomers()" class="save-btn" style="background:#1a56db; padding: 8px 15px; font-size:14px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="customersTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Address</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="box" style="margin-top: 30px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                    <h2 style="color: #0b2b5c; font-size: 20px;">Unregistered Visitors (Site Visits)</h2>
+                    <button onclick="loadVisitors()" class="save-btn" style="background:#1a56db; padding: 8px 15px; font-size:14px;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="visitorsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>IP Address</th>
+                                <th>City</th>
+                                <th>Region</th>
+                                <th>Country</th>
+                                <th>Device</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- BANNER MANAGER -->
+        <div id="banners-section" class="section-box">
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Upload New Banner</h2>
+                <p style="color: #64748b; margin-bottom: 15px;">Yahan se aap unlimited banners upload kar sakte hain. Yeh banners customer site par us waqt nazar aayenge jab "Main Hero Banner" hide hoga.</p>
+                <div class="form-group">
+                    <input type="file" id="bannerImageInput" class="form-control" accept="image/*" onchange="uploadBanner()" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                </div>
+                <div id="uploadProgress" style="display: none; color: #1a56db; font-weight: 600; margin-top: 10px;">Uploading...</div>
+            </div>
+
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Uploaded Banners</h2>
+                <div id="bannerList"></div>
+            </div>
+        </div>
+
+        <!-- JOBS ADMIN -->
+        <div id="jobs-section" class="section-box">
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Post a New Job</h2>
+                <form id="jobForm">
+                    <div class="form-group"><label>Job Title *</label><input type="text" id="jobTitle" required placeholder="e.g. Pharmacy Assistant"></div>
+                    <div class="form-group"><label>Job Description</label><textarea id="jobDesc" rows="3"></textarea></div>
+                    <div class="form-group"><label>Requirements (Skills, Experience)</label><textarea id="jobReqs" rows="2"></textarea></div>
+                    <button type="submit" class="save-btn" id="saveJobBtn">Publish Job</button>
+                </form>
+            </div>
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Active Jobs</h2>
+                <div id="adminJobsList"></div>
+            </div>
+        </div>
+
+        <!-- MESSAGES ADMIN -->
+        <div id="messages-section" class="section-box">
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Contact Messages</h2>
+                <div id="adminMessagesList"></div>
+            </div>
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Job Applications (CVs)</h2>
+                <div id="adminApplicationsList"></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settings-section" class="section-box">
+            <div class="box" style="border: 2px solid #1a56db;">
+                <h2 style="color: #1a56db; font-size: 20px; margin-bottom: 20px;">Hero Banner Controls</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Hero Heading Movement</label>
+                        <select id="heroMovement">
+                            <option value="rtl">Right to Left (Marquee)</option>
+                            <option value="ltr">Left to Right</option>
+                            <option value="center">Center (Static)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Banner Display Style (Jab Hero Hide ho)</label>
+                        <select id="bannerDisplayStyle">
+                            <option value="slider">Slider (Slide)</option>
+                            <option value="fade">Fade</option>
+                            <option value="grid">Normal Grid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Banner Height (e.g. 480px, 600px)</label>
+                        <input type="text" id="bannerHeight" placeholder="Default: 480px">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Banner Image Fit (Scale)</label>
+                        <select id="bannerFit">
+                            <option value="cover">Cover (Recommended - Fills area)</option>
+                            <option value="contain">Contain (Shows full image)</option>
+                            <option value="fill">Fill (Stretch to fit)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 15px;">
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                        <input type="checkbox" id="hideMainHero" style="width: 20px; height: 20px;">
+                        <label for="hideMainHero" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #0b2b5c;">
+                            Hide Main Hero Banner (Purana Banner Hide Karein)
+                        </label>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                        <input type="checkbox" id="showUploadedBanners" style="width: 20px; height: 20px;">
+                        <label for="showUploadedBanners" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #1a56db;">
+                            Show Uploaded Banners (Naya Banner Show Karein)
+                        </label>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                        <input type="checkbox" id="showHeroText" style="width: 20px; height: 20px;">
+                        <label for="showHeroText" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #10b981;">
+                            Show Hero Text & Overlay (Text aur Neela Background Dikhayein)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box">
+                <h2 style="color: #0b2b5c; font-size: 20px; margin-bottom: 20px;">Store Settings</h2>
+                <form id="settingsForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>Store Name</label><input type="text" id="storeName" required></div>
+                        <div class="form-group"><label>Tagline</label><input type="text" id="storeTagline" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Phone Number</label><input type="text" id="storePhone" required></div>
+                        <div class="form-group"><label>WhatsApp Number (Admin Alerts)</label><input type="text" id="storeWhatsapp" required></div>
+                    </div>
+                    <div class="form-group"><label>Address</label><textarea id="storeAddress" rows="2" required></textarea></div>
+                    
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">🔍 Search Engine & Products Layout Settings</h3>
+                    <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Products Per Page (Pagination)</label>
+                            <select id="productsPerPage">
+                                <option value="5">5 Products</option>
+                                <option value="10">10 Products</option>
+                                <option value="15">15 Products (Default)</option>
+                                <option value="20">20 Products</option>
+                                <option value="25">25 Products</option>
+                                <option value="50">50 Products</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Products Per Row (Columns 1 to 6)</label>
+                            <select id="productsPerRow">
+                                <option value="1">1 Column</option>
+                                <option value="2">2 Columns</option>
+                                <option value="3">3 Columns</option>
+                                <option value="4">4 Columns</option>
+                                <option value="5">5 Columns (Default)</option>
+                                <option value="6">6 Columns</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                            <input type="checkbox" id="showSearchNav" style="width: 20px; height: 20px;">
+                            <label for="showSearchNav" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #1a56db;">
+                                Show Search Bar in Navbar (Jobs ke baad)
+                            </label>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                            <input type="checkbox" id="showSearchProducts" style="width: 20px; height: 20px;">
+                            <label for="showSearchProducts" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #1a56db;">
+                                Show Search Bar above Products (Our Products se pehle)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Search Bar Font Family</label>
+                            <select id="searchFontFamily">
+                                <option value="Poppins">Poppins (Default)</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Noto Nastaliq Urdu">Noto Nastaliq Urdu</option>
+                                <option value="sans-serif">Sans-Serif</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Search Bar Font Size (e.g. 14px)</label>
+                            <input type="text" id="searchFontSize" placeholder="Default: 14px">
+                        </div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">📢 Hero Banner Text</h3>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:100%;">
+                            <label>Main Heading</label>
+                            <input type="text" id="heroHeading" placeholder="e.g. گھر بیٹھے میڈیسن آرڈر کریں!">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:100%;">
+                            <label>Subheading</label>
+                            <input type="text" id="heroSubheading" placeholder="e.g. 💊 ادویات • 🩺 صحت کا سامان">
+                        </div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">📢 Admin Alert Message (Site Banner)</h3>
+                    <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                        <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 0;">
+                            <input type="checkbox" id="showAlertMessage" style="width: 20px; height: 20px;">
+                            <label for="showAlertMessage" style="margin-bottom: 0; cursor: pointer; font-weight: 600; color: #1a56db;">
+                                Show Alert Message on Site (Site par alert message dikhayein)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Alert Message (Agar koi message likhenge to banner ke upar show hoga)</label>
+                            <textarea id="adminAlertMessage" rows="2" placeholder="e.g. Special discount on all medicines today!"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Alert Position</label>
+                            <select id="alertPosition">
+                                <option value="top">Top (Sab se upar)</option>
+                                <option value="marquee-top">Chalti Pics ke Oper</option>
+                                <option value="marquee-bottom">Chalti Pics ke Neeche</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Alert Font Size (e.g. 16px)</label>
+                            <input type="text" id="alertSize" placeholder="Default: 16px">
+                        </div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">🖼️ Website Branding (Logo, Banner, Favicon, Standees)</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Logo Upload</label>
+                            <input type="file" id="storeLogoFile" accept="image/*">
+                            <div id="logoPreview" class="preview-box" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Banner Upload</label>
+                            <input type="file" id="storeBannerFile" accept="image/*">
+                            <div id="bannerPreview" class="preview-box" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Favicon Upload (Browser Tab Icon)</label>
+                            <input type="file" id="storeFaviconFile" accept="image/png, image/x-icon, image/jpeg">
+                            <div id="faviconPreview" class="preview-box" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Custom Cart Icon Upload</label>
+                            <input type="file" id="storeCartIconFile" accept="image/*">
+                            <div id="cartIconPreview" class="preview-box" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cart Icon Size (px)</label>
+                            <input type="number" id="cartIconSize" placeholder="Default: 24" min="16" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:flex; align-items:center; cursor:pointer; margin-top:35px;">
+                                <input type="checkbox" id="showCartGuide"> 
+                                Show Cart Guide Message to Customer
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex:100%;">
+                            <label>Custom Cart Guide Text (Message shown near cart)</label>
+                            <textarea id="cartGuideText" rows="2" placeholder="Message likhein jo cart ke sath show ho..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Guide Background Color</label>
+                            <input type="color" id="guideBgColor">
+                        </div>
+                        <div class="form-group">
+                            <label>Guide Text Color</label>
+                            <input type="color" id="guideTextColor">
+                        </div>
+                        <div class="form-group">
+                            <label>Guide Font Size (e.g. 13px, 16px)</label>
+                            <input type="text" id="guideFontSize" placeholder="Default: 13px">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Left Side Standee Upload</label>
+                            <input type="file" id="storeLeftStandeeFile" accept="image/*">
+                            <div id="leftStandeePreview" class="preview-box" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Right Side Standee Upload</label>
+                            <input type="file" id="storeRightStandeeFile" accept="image/*">
+                            <div id="rightStandeePreview" class="preview-box" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Standee Height (e.g. 500px, 80vh)</label>
+                            <input type="text" id="standeeHeight" placeholder="Default: 500px">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:flex; align-items:center; cursor:pointer; margin-top:35px;">
+                                <input type="checkbox" id="showStandees"> 
+                                Show Left/Right Side Standees
+                            </label>
+                        </div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">🌐 Top Bar & Social Icons</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group"><label>Top Bar City / Location</label><input type="text" id="topBarCity"></div>
+                        <div class="form-group"><label>Top Bar Email</label><input type="email" id="topBarEmail"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; cursor:pointer;">
+                            <input type="checkbox" id="showSocialIcons"> 
+                            Show Social Icons in Top Bar
+                        </label>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"><label>Facebook URL</label><input type="text" id="socialFacebook" placeholder="https://facebook.com/..."></div>
+                        <div class="form-group"><label>Instagram URL</label><input type="text" id="socialInstagram" placeholder="https://instagram.com/..."></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>WhatsApp Direct Link</label><input type="text" id="socialWhatsapp" placeholder="https://wa.me/..."></div>
+                    </div>
+
+                    <hr class="section-divider">
+                    <h3 class="sub-heading">💳 Payment & Delivery</h3>
+                    
+                    <div class="form-group">
+                        <label>Header Scroll Direction (Top Banner Pics)</label>
+                        <select id="storeScrollDirection" required>
+                            <option value="ltr">Left to Right (Standard)</option>
+                            <option value="rtl">Right to Left</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"><label>Delivery Charges (Rs.)</label><input type="number" id="storeDeliveryCharge" required></div>
+                        <div class="form-group"><label>Easypaisa Account</label><input type="text" id="storeEasypaisa" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>JazzCash Account</label><input type="text" id="storeJazzcash" required></div>
+                        <div class="form-group"><label>Bank Details</label><input type="text" id="storeBank" required></div>
+                    </div>
+                    <div class="form-group"><label>Payment Note for Customer</label><textarea id="storePaymentNote" rows="2" required style="direction: rtl; text-align: right;"></textarea></div>
+                    
+                    <button type="submit" class="save-btn" id="saveSettingsBtn"><i class="fas fa-save"></i> Save All Settings</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ACCOUNTING MODAL -->
+    <div class="modal-overlay" id="accountingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-calculator"></i> Accounting & Profit Detail</h2>
+                <button class="close-btn" onclick="closeAccountingModal()"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="filter-row">
+                <div class="form-group">
+                    <label>From Date</label>
+                    <input type="date" id="filterStartDate">
+                </div>
+                <div class="form-group">
+                    <label>To Date</label>
+                    <input type="date" id="filterEndDate">
+                </div>
+                <button onclick="filterAccountingData()" class="save-btn" style="background:#1a56db; height: 45px; padding: 0 25px;"><i class="fas fa-search"></i> Filter</button>
+                <button onclick="resetAccountingFilter()" class="save-btn" style="background:#64748b; height: 45px; padding: 0 25px;"><i class="fas fa-redo"></i> Reset</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="accounting-table" id="accountingTable">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Date</th>
+                            <th>Product Cost</th>
+                            <th>Selling Price</th>
+                            <th>Delivery Charges</th>
+                            <th>Total Revenue<br><small style="font-weight:400;">(Sell + Delivery)</small></th>
+                            <th>Net Profit<br><small style="font-weight:400;">(Rev - Cost - Delivery)</small></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="text-align:right;">Totals:</td>
+                            <td id="accTotalCost">Rs. 0</td>
+                            <td id="accTotalSelling">Rs. 0</td>
+                            <td id="accTotalDelivery">Rs. 0</td>
+                            <td id="accTotalRevenue">Rs. 0</td>
+                            <td id="accTotalProfit">Rs. 0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRINT SLIP MODAL -->
+    <div class="modal-overlay" id="slipModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <h2><i class="fas fa-print"></i> Print Slip</h2>
+                <button class="close-btn" onclick="document.getElementById('slipModal').classList.remove('show')"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="slipContent" class="print-slip">
+                <!-- Slip JS se generate hogi -->
+            </div>
+            <button class="save-btn" onclick="window.print()" style="margin-top: 20px; width:100%;"><i class="fas fa-print"></i> Print Now</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://exbxkmwdhzcnbxajsqrt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Va0PQhI68qCpe-44Ok3zvA_7980Yu-6';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let editingProductId = null;
+        let editingProductImagePath = null;
+        let allOrders = []; 
+        let allProductsList = []; 
+        let currentSettings = {}; 
+        let lastOrderCount = 0;
+        let allBanners = [];
+        let currentSortOrder = 'asc'; // Sorting state
+
+        async function checkUser() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) { window.location.href = 'admin.html'; }
+            else { loadData(); setInterval(checkNewOrders, 10000); }
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.section-box').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(section + '-section').classList.add('active');
+            
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                if(btn.innerText.toLowerCase().includes(section)) btn.classList.add('active');
+            });
+
+            if(section === 'jobs') loadAdminJobs();
+            if(section === 'messages') loadAdminMessages();
+            if(section === 'banners') loadAdminBanners();
+            if(section === 'customers') { loadCustomers(); loadVisitors(); }
+        }
+
+        // === NOTIFICATION BELL LOGIC ===
+        async function checkNewOrders() {
+            const { count, error } = await supabaseClient.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+            if (error) return;
+            
+            const bellBadge = document.getElementById('bellBadge');
+            if (count > 0) {
+                bellBadge.innerText = count;
+                bellBadge.style.display = 'block';
+                if (count > lastOrderCount) {
+                    const bell = document.getElementById('bellIcon');
+                    bell.classList.add('bell-ring');
+                    setTimeout(() => bell.classList.remove('bell-ring'), 1000);
+                    
+                    if (Notification.permission === "granted") {
+                        new Notification("New Order Received!", { body: `You have ${count} pending order(s).` });
+                    }
+                }
+                lastOrderCount = count;
+            } else {
+                bellBadge.style.display = 'none';
+                lastOrderCount = 0;
+            }
+        }
+
+        if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+
+        async function loadData() {
+            loadSettings();
+            await loadOrdersAndMetrics();
+            loadProducts();
+            loadCustomers(); // Load customers on init
+        }
+
+        // === CUSTOMERS & VISITORS LOGIC ===
+        async function loadCustomers() {
+            const tbody = document.querySelector('#customersTable tbody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+            
+            const { data, error } = await supabaseClient.from('customers').select('*').order('created_at', { ascending: false });
+            
+            if (error) { tbody.innerHTML = `<tr><td colspan="5" style="color:red;">Error: ${error.message}</td></tr>`; return; }
+            if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No registered customers yet.</td></tr>'; return; }
+            
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td>${new Date(c.created_at).toLocaleDateString('en-GB')}</td>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.email}</td>
+                    <td>${c.phone || 'N/A'}</td>
+                    <td>${c.address || 'N/A'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadVisitors() {
+            const tbody = document.querySelector('#visitorsTable tbody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
+            
+            const { data, error } = await supabaseClient.from('visitors').select('*').order('visited_at', { ascending: false }).limit(50); // Show latest 50
+            
+            if (error) { tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Error: ${error.message}</td></tr>`; return; }
+            if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No visitor records yet.</td></tr>'; return; }
+            
+            tbody.innerHTML = data.map(v => `
+                <tr>
+                    <td>${new Date(v.visited_at).toLocaleString('en-GB')}</td>
+                    <td><strong>${v.ip_address}</strong></td>
+                    <td>${v.city}</td>
+                    <td>${v.region}</td>
+                    <td>${v.country}</td>
+                    <td>${v.device_type}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadOrdersAndMetrics() {
+            const list = document.getElementById('ordersList');
+            list.innerHTML = '<p style="color:#64748b; padding:20px;">Loading orders...</p>';
+            
+            const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+            
+            if (error) { list.innerHTML = '<p style="color:red;">Error: ' + error.message + '</p>'; return; }
+            
+            allOrders = data; 
+
+            let totalRev = 0, pending = 0, completed = 0;
+            data.forEach(order => {
+                totalRev += order.total;
+                if (order.status === 'pending') pending++;
+                if (order.status === 'delivered') completed++;
+            });
+            
+            document.getElementById('metricTotalOrders').innerText = data.length;
+            document.getElementById('metricTotalRevenue').innerText = 'Rs. ' + totalRev.toLocaleString();
+            document.getElementById('metricPendingOrders').innerText = pending;
+            document.getElementById('metricDeliveredOrders').innerText = completed;
+
+            if (data.length === 0) { list.innerHTML = '<p style="color:#64748b;">No orders found.</p>'; return; }
+            list.innerHTML = '';
+            
+            for (const order of data) {
+                let statusClass = order.status === 'pending' ? 'status-pending' : order.status === 'paid' ? 'status-paid' : 'status-delivered';
+                let statusText = order.status === 'pending' ? 'Pending' : order.status === 'paid' ? 'Paid' : 'Delivered';
+                
+                let imgLink = 'No Image';
+                if (order.screenshot_path) {
+                    const { data: signedData } = await supabaseClient.storage.from('screenshots').createSignedUrl(order.screenshot_path, 3600);
+                    if (signedData) imgLink = `<a href="${signedData.signedUrl}" target="_blank" class="action-btn btn-view-img">View Screenshot</a>`;
+                }
+
+                let actionBtns = '';
+                if (order.status === 'pending') {
+                    actionBtns = `
+                        <button onclick="updateOrderStatus('${order.id}', 'paid', '${order.phone}', '${order.order_number}')" class="action-btn btn-paid"><i class="fab fa-whatsapp"></i> Confirm & Paid</button>
+                        <button onclick="openPrintSlip('${order.order_number}')" class="action-btn btn-print"><i class="fas fa-print"></i> Print Slip</button>
+                    `;
+                } else if (order.status === 'paid') {
+                    actionBtns = `
+                        <button onclick="updateOrderStatus('${order.id}', 'delivered', '${order.phone}', '${order.order_number}')" class="action-btn btn-delivered"><i class="fab fa-whatsapp"></i> Mark Delivered</button>
+                        <button onclick="updateOrderStatus('${order.id}', 'pending', '${order.phone}', '${order.order_number}', true)" class="action-btn btn-revert"><i class="fas fa-undo"></i> Revert</button>
+                        <button onclick="openPrintSlip('${order.order_number}')" class="action-btn btn-print"><i class="fas fa-print"></i> Print Slip</button>
+                    `;
+                } else if (order.status === 'delivered') {
+                    actionBtns = `
+                        <button onclick="updateOrderStatus('${order.id}', 'paid', '${order.phone}', '${order.order_number}', true)" class="action-btn btn-revert"><i class="fas fa-undo"></i> Revert</button>
+                        <button onclick="openPrintSlip('${order.order_number}')" class="action-btn btn-print"><i class="fas fa-print"></i> Print Slip</button>
+                    `;
+                }
+
+                let itemsHtml = '<ul style="margin: 10px 0; padding-left: 20px; color: #475569;">';
+                if (order.items && order.items.length > 0) {
+                    order.items.forEach(item => { itemsHtml += `<li>${item.qty} x ${item.name} ${item.type ? '('+item.type+')' : ''} (Rs. ${(item.price * item.qty).toFixed(2)})</li>`; });
+                } else { itemsHtml += `<li>No items</li>`; }
+                itemsHtml += '</ul>';
+
+                const date = new Date(order.created_at).toLocaleString('en-GB');
+                
+                list.innerHTML += `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <h3 style="color:#0b2b5c;">${order.order_number}</h3>
+                            <span class="order-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div style="padding: 10px 0;">
+                            <p><strong>Customer:</strong> ${order.customer_name} | <strong>Phone:</strong> ${order.phone}</p>
+                            <p><strong>Address:</strong> ${order.address}</p>
+                            <div style="background:#f8fafc; padding:10px; border-radius:8px; margin:10px 0; border: 1px solid #e2e8f0;">
+                                <strong>🛒 Items:</strong> ${itemsHtml}
+                                <p style="color:#10b981; font-weight:bold; font-size:18px;">Total: Rs. ${order.total.toFixed(2)}</p>
+                            </div>
+                            <p><strong>Method:</strong> ${order.payment_method} | <strong>Date:</strong> ${date}</p>
+                        </div>
+                        <div class="order-actions">${imgLink} ${actionBtns}</div>
+                    </div>`;
+            }
+            checkNewOrders();
+        }
+
+        async function updateOrderStatus(orderId, newStatus, phone, orderNumber, isRevert = false) {
+            const updates = { status: newStatus };
+            
+            if (newStatus === 'paid' && !isRevert) updates.paid_at = new Date().toISOString();
+            if (newStatus === 'delivered' && !isRevert) updates.delivered_at = new Date().toISOString();
+            if (isRevert && newStatus === 'pending') { updates.paid_at = null; updates.delivered_at = null; }
+            if (isRevert && newStatus === 'paid') { updates.delivered_at = null; }
+
+            const { error } = await supabaseClient.from('orders').update(updates).eq('id', orderId);
+            if (error) { alert("Error updating status: " + error.message); return; }
+
+            let waNumber = phone.replace(/[^0-9]/g, '');
+            if (waNumber.startsWith('0')) waNumber = '92' + waNumber.substring(1); 
+            if (waNumber.startsWith('3')) waNumber = '92' + waNumber; 
+
+            let msg = "";
+            if (newStatus === 'paid' && !isRevert) {
+                msg = `Assalam o Alaikum! Aapka order *${orderNumber}* confirm ho gaya hai. Aapki payment received ho gayi hai. Shukriya! The Medical Store.`;
+            } else if (newStatus === 'delivered' && !isRevert) {
+                msg = `Assalam o Alaikum! Aapka order *${orderNumber}* deliver kar diya gaya hai. Humein aapke sath deal karke khushi hui! The Medical Store.`;
+            }
+
+            if (msg !== "") {
+                const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+                const waLink = document.createElement('a');
+                waLink.href = waUrl;
+                waLink.target = '_blank';
+                waLink.click();
+            }
+
+            loadOrdersAndMetrics();
+        }
+
+        async function loadProducts() {
+            const list = document.getElementById('productList');
+            list.innerHTML = '<p style="color:#64748b;">Loading...</p>';
+            const { data, error } = await supabaseClient.from('products').select('*').order('name', { ascending: currentSortOrder === 'asc' });
+            if (error) { list.innerHTML = '<p style="color:red;">Error: ' + error.message + '</p>'; return; }
+            
+            allProductsList = data; 
+            renderDashboardCostingList(); 
+
+            if (data.length === 0) { list.innerHTML = '<p style="color:#64748b;">No products added yet.</p>'; return; }
+            list.innerHTML = '';
+            for (const prod of data) {
+                let imgUrl = 'https://placehold.co/100x100?text=No+Image';
+                if (prod.image_path) { const { data: pubUrl } = supabaseClient.storage.from('product-images').getPublicUrl(prod.image_path); imgUrl = pubUrl.publicUrl; }
+                
+                let badge = prod.stock_status === 'sold' ? '<span class="badge badge-sold">Sold</span>' : '<span class="badge badge-available">In Stock</span>';
+                
+                let priceHtml = `Rs. ${prod.price_per_unit}`;
+                if (prod.old_price && prod.old_price > prod.price_per_unit) {
+                    priceHtml = `<span style="text-decoration:line-through; color:#94a3b8; font-size:12px;">Rs. ${prod.old_price}</span> <span style="color:#1a56db; font-weight:bold;">Rs. ${prod.price_per_unit}</span>`;
+                }
+                if (prod.discount_percent) {
+                    badge += ` <span class="badge" style="background:#f59e0b; color:white;">${prod.discount_percent}% OFF</span>`;
+                }
+
+                list.innerHTML += `
+                    <div class="product-card">
+                        <img src="${imgUrl}" alt="${prod.name}">
+                        <h4>${prod.name}</h4>
+                        <p style="margin-bottom:5px;">${priceHtml}</p>
+                        <small style="color:#64748b; display:block; margin-bottom:5px;">${prod.category}</small>
+                        <small style="color:#10b981; display:block; font-weight:bold; margin-bottom:5px;">Net Cost/Box: Rs. ${prod.cost_price || 0}</small>
+                        <small style="color:#64748b; display:block; margin-bottom:5px;">Box Qty: ${prod.box_quantity || 1} units</small>
+                        ${badge}
+                        <div class="product-actions">
+                            <button class="prod-action-btn btn-edit" onclick='startEdit(${JSON.stringify(prod).replace(/'/g, "&#39;")})'>
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="prod-action-btn btn-delete" onclick="deleteProduct('${prod.id}', '${prod.image_path || ''}', '${prod.name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function sortProducts(order) {
+            currentSortOrder = order;
+            loadProducts();
+        }
+
+        function renderDashboardCostingList() {
+            const tbody = document.querySelector('#dashboardCostingList tbody');
+            tbody.innerHTML = '';
+            if(!allProductsList || allProductsList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#64748b;">No products found.</td></tr>';
+                return;
+            }
+            allProductsList.forEach(prod => {
+                const origCost = prod.cost_price_before_discount || 0;
+                const tradeDisc = prod.trade_discount_percent || 0;
+                const cashDisc = prod.cash_discount_percent || 0;
+                const netCost = prod.cost_price || 0;
+                const qty = prod.box_quantity || 1;
+                const unitCost = netCost / qty;
+                const sell = prod.price_per_unit || 0;
+                const unitSell = sell / qty;
+                const profitUnit = unitSell - unitCost;
+                const profitClass = profitUnit >= 0 ? 'profit-text' : 'loss-text';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${prod.name}</strong><br><small style="color:#64748b;">${prod.category}</small></td>
+                        <td>Rs. ${origCost}</td>
+                        <td>${tradeDisc}%</td>
+                        <td>${cashDisc}%</td>
+                        <td style="font-weight:bold; color:#1a56db;">Rs. ${netCost}</td>
+                        <td>${qty}</td>
+                        <td>Rs. ${unitCost.toFixed(2)}</td>
+                        <td>Rs. ${sell}</td>
+                        <td>Rs. ${unitSell.toFixed(2)}</td>
+                        <td class="${profitClass}">Rs. ${profitUnit.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function startEdit(prod) {
+            editingProductId = prod.id;
+            editingProductImagePath = prod.image_path || null;
+
+            document.getElementById('prodName').value = prod.name;
+            document.getElementById('prodCostPrice').value = prod.cost_price_before_discount || prod.cost_price || '';
+            document.getElementById('prodTradeDiscount').value = prod.trade_discount_percent || '';
+            document.getElementById('prodCashDiscount').value = prod.cash_discount_percent || '';
+            document.getElementById('prodBoxQty').value = prod.box_quantity || 1;
+            document.getElementById('prodPrice').value = prod.price_per_unit;
+            document.getElementById('prodOldPrice').value = prod.old_price || '';
+            document.getElementById('prodDiscount').value = prod.discount_percent || '';
+            document.getElementById('prodCategory').value = prod.category;
+            document.getElementById('prodStockStatus').value = prod.stock_status;
+            document.getElementById('prodImage').value = '';
+            
+            document.getElementById('prodShowDiscount').checked = prod.show_discount_badge !== false;
+
+            calculateCosts(); 
+
+            document.getElementById('productFormTitle').innerText = 'Edit Product';
+            document.getElementById('editingProductName').innerText = prod.name;
+            document.getElementById('editModeBanner').classList.add('show');
+            document.getElementById('saveProdBtn').innerHTML = '<i class="fas fa-save"></i> Update Product';
+            document.getElementById('saveProdBtn').style.background = '#3b82f6';
+            document.getElementById('imageOptionalNote').innerText = '(leave empty to keep current image)';
+
+            document.getElementById('productFormTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cancelEdit() {
+            editingProductId = null;
+            editingProductImagePath = null;
+            document.getElementById('productForm').reset();
+            document.getElementById('productFormTitle').innerText = 'Add New Product';
+            document.getElementById('editModeBanner').classList.remove('show');
+            document.getElementById('saveProdBtn').innerHTML = 'Save Product';
+            document.getElementById('saveProdBtn').style.background = '#10b981';
+            document.getElementById('imageOptionalNote').innerText = '';
+            document.getElementById('displayUnitCost').value = '';
+            document.getElementById('displayUnitPrice').value = '';
+            document.getElementById('prodActualCost').value = '';
+            document.getElementById('prodShowDiscount').checked = true; 
+        }
+
+        function calculateCosts() {
+            const origCost = parseFloat(document.getElementById('prodCostPrice').value) || 0;
+            const tradeDisc = parseFloat(document.getElementById('prodTradeDiscount').value) || 0;
+            const cashDisc = parseFloat(document.getElementById('prodCashDiscount').value) || 0;
+            const qty = parseFloat(document.getElementById('prodBoxQty').value) || 1;
+            const sellPrice = parseFloat(document.getElementById('prodPrice').value) || 0;
+            
+            let afterTrade = origCost - (origCost * (tradeDisc / 100));
+            let netCost = afterTrade - (afterTrade * (cashDisc / 100));
+            
+            document.getElementById('prodActualCost').value = netCost > 0 ? netCost.toFixed(2) : '';
+
+            if (qty > 0) {
+                document.getElementById('displayUnitCost').value = netCost > 0 ? 'Rs. ' + (netCost / qty).toFixed(2) : 'Rs. 0';
+                document.getElementById('displayUnitPrice').value = sellPrice > 0 ? 'Rs. ' + (sellPrice / qty).toFixed(2) : 'Rs. 0';
+            }
+        }
+
+        document.getElementById('prodDiscount').addEventListener('input', function() {
+            const discount = parseFloat(this.value);
+            const currentPrice = parseFloat(document.getElementById('prodPrice').value);
+            if (discount > 0 && currentPrice > 0) {
+                const oldPrice = currentPrice / (1 - (discount / 100));
+                document.getElementById('prodOldPrice').value = Math.round(oldPrice);
+            }
+        });
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const isEdit = editingProductId !== null;
+            const btn = document.getElementById('saveProdBtn');
+            btn.innerHTML = isEdit ? 'Updating...' : 'Saving...';
+            btn.disabled = true;
+
+            try {
+                const file = document.getElementById('prodImage').files[0];
+                let imagePath = isEdit ? editingProductImagePath : '';
+
+                if (file) {
+                    const fileName = `prod_${Date.now()}.${file.name.split('.').pop()}`;
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, file);
+                    if (uploadError) throw uploadError;
+                    imagePath = uploadData.path;
+
+                    if (isEdit && editingProductImagePath) {
+                        await supabaseClient.storage.from('product-images').remove([editingProductImagePath]);
+                    }
+                }
+
+                const currentPrice = parseFloat(document.getElementById('prodPrice').value);
+                const origCost = parseFloat(document.getElementById('prodCostPrice').value) || 0;
+                const tradeDisc = parseFloat(document.getElementById('prodTradeDiscount').value) || 0;
+                const cashDisc = parseFloat(document.getElementById('prodCashDiscount').value) || 0;
+                const netCost = parseFloat(document.getElementById('prodActualCost').value) || origCost;
+                const boxQty = parseFloat(document.getElementById('prodBoxQty').value) || 1;
+                
+                const oldPriceInput = document.getElementById('prodOldPrice').value;
+                const discountInput = document.getElementById('prodDiscount').value;
+                
+                let oldPrice = oldPriceInput ? parseFloat(oldPriceInput) : null;
+                let discountPercent = discountInput ? parseInt(discountInput) : null;
+
+                if (discountPercent && !oldPrice) {
+                    oldPrice = Math.round(currentPrice / (1 - (discountPercent / 100)));
+                }
+
+                const productData = {
+                    name: document.getElementById('prodName').value,
+                    category: document.getElementById('prodCategory').value,
+                    cost_price_before_discount: origCost,
+                    trade_discount_percent: tradeDisc,
+                    cash_discount_percent: cashDisc,
+                    cost_price: netCost, 
+                    box_quantity: boxQty,
+                    price_per_unit: currentPrice,
+                    old_price: oldPrice,
+                    discount_percent: discountPercent,
+                    stock_status: document.getElementById('prodStockStatus').value,
+                    image_path: imagePath,
+                    show_discount_badge: document.getElementById('prodShowDiscount').checked
+                };
+
+                if (isEdit) {
+                    const { error: dbError } = await supabaseClient.from('products').update(productData).eq('id', editingProductId);
+                    if (dbError) throw dbError;
+                    alert("✅ Product Updated!");
+                } else {
+                    productData.is_active = true;
+                    const { error: dbError } = await supabaseClient.from('products').insert([productData]);
+                    if (dbError) throw dbError;
+                    alert("✅ Product Added!");
+                }
+
+                cancelEdit();
+                loadProducts();
+            } catch (err) {
+                alert("❌ Error: " + err.message);
+            } finally {
+                btn.disabled = false;
+                if (editingProductId !== null) {
+                    btn.innerHTML = '<i class="fas fa-save"></i> Update Product';
+                } else {
+                    btn.innerHTML = 'Save Product';
+                }
+            }
+        });
+
+        async function deleteProduct(productId, imagePath, productName) {
+            const confirmed = confirm(`⚠️ Delete "${productName}"?\n\nThis will permanently remove the product and its image. This action cannot be undone.`);
+            if (!confirmed) return;
+
+            try {
+                if (imagePath && imagePath.trim() !== '') {
+                    await supabaseClient.storage.from('product-images').remove([imagePath]);
+                }
+                const { error } = await supabaseClient.from('products').delete().eq('id', productId);
+                if (error) throw error;
+                alert("✅ Product Deleted!");
+                loadProducts();
+            } catch (err) {
+                alert("❌ Delete Error: " + err.message);
+            }
+        }
+
+        // === BANNER MANAGER LOGIC ===
+        async function loadAdminBanners() {
+            const container = document.getElementById('bannerList');
+            container.innerHTML = '<p style="color:#64748b;">Loading banners...</p>';
+            
+            const { data, error } = await supabaseClient.from('banners').select('*').order('created_at', { ascending: false });
+            if (error) { container.innerHTML = '<p style="color:red;">Error: ' + error.message + '</p>'; return; }
+            
+            allBanners = data;
+            if (data.length === 0) { container.innerHTML = '<p style="color:#64748b;">No banners uploaded yet.</p>'; return; }
+            
+            container.innerHTML = '';
+            data.forEach(banner => {
+                container.innerHTML += `
+                    <div class="banner-list-item">
+                        <img src="${banner.image_url}" alt="Banner">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                <input type="checkbox" ${banner.is_active ? 'checked' : ''} onchange="toggleBannerStatus('${banner.id}', this.checked)">
+                                Active
+                            </label>
+                            <button class="prod-action-btn btn-delete" onclick="deleteBanner('${banner.id}', '${banner.image_url}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function uploadBanner() {
+            const fileInput = document.getElementById('bannerImageInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const progress = document.getElementById('uploadProgress');
+            progress.style.display = 'block';
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `banner_${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabaseClient.storage.from('banners').upload(filePath, file);
+            if (uploadError) { alert('Upload failed: ' + uploadError.message); progress.style.display = 'none'; return; }
+
+            const { data: { publicUrl } } = supabaseClient.storage.from('banners').getPublicUrl(filePath);
+
+            const { error: dbError } = await supabaseClient.from('banners').insert([{
+                image_url: publicUrl,
+                is_active: true
+            }]);
+
+            progress.style.display = 'none';
+            fileInput.value = '';
+
+            if (dbError) {
+                alert('Database error: ' + dbError.message);
+            } else {
+                alert('Banner uploaded successfully!');
+                loadAdminBanners();
+            }
+        }
+
+        async function toggleBannerStatus(id, isActive) {
+            await supabaseClient.from('banners').update({ is_active: isActive }).eq('id', id);
+        }
+
+        async function deleteBanner(id, imageUrl) {
+            if (!confirm('Are you sure you want to delete this banner?')) return;
+
+            const urlParts = imageUrl.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+
+            await supabaseClient.storage.from('banners').remove([fileName]);
+            const { error } = await supabaseClient.from('banners').delete().eq('id', id);
+            
+            if (error) { alert('Error deleting banner'); } else { loadAdminBanners(); }
+        }
+
+        // === SETTINGS & IMAGE REMOVE LOGIC ===
+        function renderPreview(elementId, url, type) {
+            const container = document.getElementById(elementId);
+            if (url) {
+                container.style.display = 'flex';
+                container.innerHTML = `
+                    <img src="${url}" alt="${type}">
+                    <span>${type} uploaded</span>
+                    <button type="button" class="remove-btn" onclick="removeImage('${type}')" title="Remove"><i class="fas fa-times"></i></button>
+                `;
+            } else {
+                container.style.display = 'none';
+                container.innerHTML = '';
+            }
+        }
+
+        async function removeImage(type) {
+            if (!confirm(`Are you sure you want to remove this ${type}?`)) return;
+            
+            let fieldName = '';
+            if (type === 'Logo') fieldName = 'logo_url';
+            if (type === 'Banner') fieldName = 'banner_url';
+            if (type === 'Favicon') fieldName = 'favicon_url';
+            if (type === 'Cart Icon') fieldName = 'cart_icon_url';
+            if (type === 'Left Standee') fieldName = 'left_standee_url';
+            if (type === 'Right Standee') fieldName = 'right_standee_url';
+
+            const oldUrl = currentSettings[fieldName];
+            if (oldUrl) {
+                const pathPart = oldUrl.split('product-images/')[1];
+                if (pathPart) {
+                    await supabaseClient.storage.from('product-images').remove([pathPart]);
+                }
+            }
+
+            const updates = {};
+            updates[fieldName] = null;
+            await supabaseClient.from('store_settings').update(updates).eq('id', 1);
+            
+            alert("✅ Image Removed. Refreshing...");
+            window.location.reload(); 
+        }
+
+        async function loadSettings() {
+            const { data } = await supabaseClient.from('store_settings').select('*').eq('id', 1).single();
+            if (data) {
+                currentSettings = data; 
+                document.getElementById('storeName').value = data.store_name;
+                document.getElementById('storeTagline').value = data.tagline;
+                document.getElementById('storePhone').value = data.phone;
+                document.getElementById('storeWhatsapp').value = data.whatsapp;
+                document.getElementById('storeAddress').value = data.address;
+                document.getElementById('storeDeliveryCharge').value = data.delivery_charge || 200;
+                document.getElementById('storeEasypaisa').value = data.easypaisa_account || '';
+                document.getElementById('storeJazzcash').value = data.jazzcash_account || '';
+                document.getElementById('storeBank').value = data.bank_account || '';
+                document.getElementById('storePaymentNote').value = data.payment_note || '';
+                document.getElementById('storeScrollDirection').value = data.header_scroll_direction || 'ltr';
+                
+                document.getElementById('topBarCity').value = data.top_bar_city || 'Karachi, Pakistan';
+                document.getElementById('topBarEmail').value = data.top_bar_email || '';
+                document.getElementById('showSocialIcons').checked = data.show_social_icons !== false;
+                document.getElementById('socialFacebook').value = data.facebook_url || '#';
+                document.getElementById('socialInstagram').value = data.instagram_url || '#';
+                document.getElementById('socialWhatsapp').value = data.whatsapp_url || '#';
+
+                // Hero Text
+                document.getElementById('heroHeading').value = data.hero_heading || 'گھر بیٹھے میڈیسن آرڈر کریں!';
+                document.getElementById('heroSubheading').value = data.hero_subheading || '💊 ادویات • 🩺 صحت کا سامان • 🧴 سپلیمنٹس';
+
+                // Naye fields
+                document.getElementById('adminAlertMessage').value = data.admin_alert_message || '';
+                document.getElementById('alertPosition').value = data.alert_position || 'top';
+                document.getElementById('alertSize').value = data.alert_size || '16px';
+                document.getElementById('cartIconSize').value = data.cart_icon_size || 24;
+                document.getElementById('standeeHeight').value = data.standee_height || '500px';
+                document.getElementById('showStandees').checked = data.show_standees !== false;
+                document.getElementById('showCartGuide').checked = data.show_cart_guide !== false;
+                document.getElementById('cartGuideText').value = data.cart_guide_text || 'Product select karne ke baad Cart Basket par click karein aur form fill karke order place karein.';
+                
+                // Cart Guide Colors
+                document.getElementById('guideBgColor').value = data.guide_bg_color || '#1e293b';
+                document.getElementById('guideTextColor').value = data.guide_text_color || '#ffffff';
+                document.getElementById('guideFontSize').value = data.guide_font_size || '13px';
+
+                // Hero Movement & Banners
+                document.getElementById('heroMovement').value = data.hero_movement || 'center';
+                document.getElementById('bannerDisplayStyle').value = data.banner_display_style || 'slider';
+                document.getElementById('hideMainHero').checked = data.hide_main_hero || false;
+                document.getElementById('showUploadedBanners').checked = data.show_uploaded_banners || false;
+                document.getElementById('showHeroText').checked = data.show_hero_text !== false;
+                
+                // NEW ALERT TOGGLE
+                document.getElementById('showAlertMessage').checked = data.show_alert_message !== false;
+                
+                document.getElementById('bannerHeight').value = data.banner_height || '480px';
+                document.getElementById('bannerFit').value = data.banner_fit || 'cover';
+
+                // NAYE SEARCH & LAYOUT SETTINGS
+                document.getElementById('productsPerPage').value = data.products_per_page || 15;
+                document.getElementById('productsPerRow').value = data.products_per_row || 5;
+                document.getElementById('showSearchNav').checked = data.show_search_nav !== false;
+                document.getElementById('showSearchProducts').checked = data.show_search_products !== false;
+                document.getElementById('searchFontFamily').value = data.search_font_family || 'Poppins';
+                document.getElementById('searchFontSize').value = data.search_font_size || '14px';
+
+                // Render Previews
+                renderPreview('logoPreview', data.logo_url, 'Logo');
+                renderPreview('bannerPreview', data.banner_url, 'Banner');
+                renderPreview('faviconPreview', data.favicon_url, 'Favicon');
+                renderPreview('cartIconPreview', data.cart_icon_url, 'Cart Icon');
+                renderPreview('leftStandeePreview', data.left_standee_url, 'Left Standee');
+                renderPreview('rightStandeePreview', data.right_standee_url, 'Right Standee');
+            }
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = 'Saving...'; btn.disabled = true;
+            try {
+                let logoUrl = currentSettings.logo_url;
+                let bannerUrl = currentSettings.banner_url;
+                let faviconUrl = currentSettings.favicon_url;
+                let cartIconUrl = currentSettings.cart_icon_url;
+                let leftStandeeUrl = currentSettings.left_standee_url;
+                let rightStandeeUrl = currentSettings.right_standee_url;
+
+                const uploadFile = async (inputId, currentUrl) => {
+                    const file = document.getElementById(inputId).files[0];
+                    if (file) {
+                        const safeName = file.name.replace(/\s+/g, '_');
+                        const fileName = `${Date.now()}_${safeName}`;
+                        const { data, error } = await supabaseClient.storage.from('product-images').upload(fileName, file);
+                        if (error) throw new Error("Image Upload Failed: " + error.message);
+                        return supabaseClient.storage.from('product-images').getPublicUrl(data.path).data.publicUrl;
+                    }
+                    return currentUrl;
+                };
+
+                logoUrl = await uploadFile('storeLogoFile', logoUrl);
+                bannerUrl = await uploadFile('storeBannerFile', bannerUrl);
+                faviconUrl = await uploadFile('storeFaviconFile', faviconUrl);
+                cartIconUrl = await uploadFile('storeCartIconFile', cartIconUrl);
+                leftStandeeUrl = await uploadFile('storeLeftStandeeFile', leftStandeeUrl);
+                rightStandeeUrl = await uploadFile('storeRightStandeeFile', rightStandeeUrl);
+
+                const updates = {
+                    store_name: document.getElementById('storeName').value,
+                    tagline: document.getElementById('storeTagline').value,
+                    phone: document.getElementById('storePhone').value,
+                    whatsapp: document.getElementById('storeWhatsapp').value,
+                    address: document.getElementById('storeAddress').value,
+                    delivery_charge: parseFloat(document.getElementById('storeDeliveryCharge').value),
+                    easypaisa_account: document.getElementById('storeEasypaisa').value,
+                    jazzcash_account: document.getElementById('storeJazzcash').value,
+                    bank_account: document.getElementById('storeBank').value,
+                    payment_note: document.getElementById('storePaymentNote').value,
+                    header_scroll_direction: document.getElementById('storeScrollDirection').value,
+                    
+                    top_bar_city: document.getElementById('topBarCity').value,
+                    top_bar_email: document.getElementById('topBarEmail').value,
+                    show_social_icons: document.getElementById('showSocialIcons').checked,
+                    facebook_url: document.getElementById('socialFacebook').value,
+                    instagram_url: document.getElementById('socialInstagram').value,
+                    whatsapp_url: document.getElementById('socialWhatsapp').value,
+
+                    hero_heading: document.getElementById('heroHeading').value,
+                    hero_subheading: document.getElementById('heroSubheading').value,
+
+                    admin_alert_message: document.getElementById('adminAlertMessage').value,
+                    alert_position: document.getElementById('alertPosition').value,
+                    alert_size: document.getElementById('alertSize').value,
+                    
+                    cart_icon_size: parseInt(document.getElementById('cartIconSize').value) || 24,
+                    show_cart_guide: document.getElementById('showCartGuide').checked,
+                    cart_guide_text: document.getElementById('cartGuideText').value,
+                    guide_bg_color: document.getElementById('guideBgColor').value,
+                    guide_text_color: document.getElementById('guideTextColor').value,
+                    guide_font_size: document.getElementById('guideFontSize').value,
+                    
+                    standee_height: document.getElementById('standeeHeight').value,
+                    show_standees: document.getElementById('showStandees').checked,
+
+                    hero_movement: document.getElementById('heroMovement').value,
+                    banner_display_style: document.getElementById('bannerDisplayStyle').value,
+                    hide_main_hero: document.getElementById('hideMainHero').checked,
+                    show_uploaded_banners: document.getElementById('showUploadedBanners').checked,
+                    show_hero_text: document.getElementById('showHeroText').checked,
+                    
+                    show_alert_message: document.getElementById('showAlertMessage').checked,
+                    
+                    banner_height: document.getElementById('bannerHeight').value || '480px',
+                    banner_fit: document.getElementById('bannerFit').value,
+
+                    // NAYI SETTINGS
+                    products_per_page: parseInt(document.getElementById('productsPerPage').value),
+                    products_per_row: parseInt(document.getElementById('productsPerRow').value),
+                    show_search_nav: document.getElementById('showSearchNav').checked,
+                    show_search_products: document.getElementById('showSearchProducts').checked,
+                    search_font_family: document.getElementById('searchFontFamily').value,
+                    search_font_size: document.getElementById('searchFontSize').value,
+
+                    logo_url: logoUrl,
+                    banner_url: bannerUrl,
+                    favicon_url: faviconUrl,
+                    cart_icon_url: cartIconUrl,
+                    left_standee_url: leftStandeeUrl,
+                    right_standee_url: rightStandeeUrl
+                };
+
+                const { error } = await supabaseClient.from('store_settings').update(updates).eq('id', 1);
+                if (error) throw error;
+                alert("✅ Settings Saved!"); 
+                loadSettings(); 
+            } catch (err) { alert("❌ Error: " + err.message); } finally { btn.innerHTML = '<i class="fas fa-save"></i> Save All Settings'; btn.disabled = false; }
+        });
+
+        // ============ JOBS & MESSAGES ADMIN LOGIC ============
+        async function loadAdminJobs() {
+            const container = document.getElementById('adminJobsList');
+            container.innerHTML = '<p>Loading jobs...</p>';
+            const { data, error } = await supabaseClient.from('jobs').select('*').order('created_at', { ascending: false });
+            if (error || data.length === 0) { container.innerHTML = '<p style="color:#64748b;">No jobs posted yet.</p>'; return; }
+            
+            container.innerHTML = '';
+            data.forEach(job => {
+                container.innerHTML += `
+                    <div class="job-admin-card">
+                        <div>
+                            <h4 style="color:#0b2b5c; font-size:18px;">${job.title}</h4>
+                            <p style="color:#475569; font-size:14px; margin-top:5px;">${job.description || 'No description'}</p>
+                            <small style="color:#f59e0b; font-weight:bold;">Status: ${job.is_active ? 'Active' : 'Inactive'}</small>
+                        </div>
+                        <button onclick="deleteJob('${job.id}')" style="background:#fee2e2; color:#ef4444; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold;">Delete</button>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('jobForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveJobBtn'); btn.innerHTML = 'Publishing...'; btn.disabled = true;
+            try {
+                const { error } = await supabaseClient.from('jobs').insert([{
+                    title: document.getElementById('jobTitle').value,
+                    description: document.getElementById('jobDesc').value,
+                    requirements: document.getElementById('jobReqs').value
+                }]);
+                if (error) throw error;
+                alert("✅ Job Published!");
+                document.getElementById('jobForm').reset();
+                loadAdminJobs();
+            } catch (err) { alert("❌ Error: " + err.message); } finally { btn.innerHTML = 'Publish Job'; btn.disabled = false; }
+        });
+
+        async function deleteJob(id) {
+            if(!confirm("Delete this job post?")) return;
+            await supabaseClient.from('jobs').delete().eq('id', id);
+            loadAdminJobs();
+        }
+
+        async function loadAdminMessages() {
+            const mBox = document.getElementById('adminMessagesList');
+            mBox.innerHTML = '<p>Loading messages...</p>';
+            const { data: msgs } = await supabaseClient.from('contact_messages').select('*').order('created_at', { ascending: false });
+            if (msgs && msgs.length > 0) {
+                mBox.innerHTML = '';
+                msgs.forEach(m => {
+                    mBox.innerHTML += `
+                        <div class="message-card">
+                            <h4>${m.name} <small>(${m.email})</small></h4>
+                            <p><strong>Phone:</strong> ${m.phone || 'N/A'}</p>
+                            <p>${m.message}</p>
+                            <small>${new Date(m.created_at).toLocaleString()}</small>
+                        </div>
+                    `;
+                });
+            } else { mBox.innerHTML = '<p style="color:#64748b;">No messages yet.</p>'; }
+
+            const aBox = document.getElementById('adminApplicationsList');
+            aBox.innerHTML = '<p>Loading CVs...</p>';
+            const { data: apps } = await supabaseClient.from('job_applications').select('*, jobs(title)').order('applied_at', { ascending: false });
+            if (apps && apps.length > 0) {
+                aBox.innerHTML = '';
+                for(const app of apps) {
+                    let cvLink = 'No File';
+                    if(app.cv_path) {
+                        const { data: signed } = await supabaseClient.storage.from('cvs').createSignedUrl(app.cv_path, 3600);
+                        if(signed) cvLink = `<a href="${signed.signedUrl}" target="_blank" style="color:#1a56db; font-weight:bold; text-decoration:underline;">Download CV</a>`;
+                    }
+                    aBox.innerHTML += `
+                        <div class="message-card" style="border-left-color:#10b981;">
+                            <h4>${app.name} <small>(${app.email})</small></h4>
+                            <p><strong>Phone:</strong> ${app.phone}</p>
+                            <p><strong>Applied For:</strong> ${app.jobs ? app.jobs.title : 'General Application'}</p>
+                            <p>${cvLink}</p>
+                            <small>${new Date(app.applied_at).toLocaleString()}</small>
+                        </div>
+                    `;
+                }
+            } else { aBox.innerHTML = '<p style="color:#64748b;">No CVs submitted yet.</p>'; }
+        }
+
+        // ============ ACCOUNTING MODAL LOGIC ============
+        function openAccountingModal() {
+            document.getElementById('accountingModal').classList.add('show');
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            renderAccountingTable(allOrders);
+        }
+
+        function closeAccountingModal() {
+            document.getElementById('accountingModal').classList.remove('show');
+        }
+
+        function filterAccountingData() {
+            const start = document.getElementById('filterStartDate').value;
+            const end = document.getElementById('filterEndDate').value;
+            
+            let filtered = allOrders;
+            if (start) {
+                filtered = filtered.filter(o => new Date(o.created_at) >= new Date(start));
+            }
+            if (end) {
+                const endDate = new Date(end);
+                endDate.setDate(endDate.getDate() + 1);
+                filtered = filtered.filter(o => new Date(o.created_at) <= endDate);
+            }
+            renderAccountingTable(filtered);
+        }
+
+        function resetAccountingFilter() {
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            renderAccountingTable(allOrders);
+        }
+
+        function renderAccountingTable(orders) {
+            const tbody = document.querySelector('#accountingTable tbody');
+            tbody.innerHTML = '';
+            
+            let grandTotalCost = 0;
+            let grandTotalSelling = 0;
+            let grandTotalDelivery = 0;
+            let grandTotalRevenue = 0;
+            let grandTotalProfit = 0;
+
+            if(orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b;">No orders found for this period.</td></tr>';
+                document.getElementById('accTotalCost').innerText = 'Rs. 0';
+                document.getElementById('accTotalSelling').innerText = 'Rs. 0';
+                document.getElementById('accTotalDelivery').innerText = 'Rs. 0';
+                document.getElementById('accTotalRevenue').innerText = 'Rs. 0';
+                document.getElementById('accTotalProfit').innerText = 'Rs. 0';
+                return;
+            }
+
+            orders.forEach(order => {
+                let orderCost = 0;
+                let orderSellingPrice = 0;
+
+                if(order.items) {
+                    order.items.forEach(item => {
+                        const prod = allProductsList.find(p => p.name === item.name);
+                        if(prod) {
+                            const costPerBox = prod.cost_price || 0;
+                            const boxQty = prod.box_quantity || 1;
+                            const unitCost = costPerBox / boxQty;
+                            
+                            if(item.type && item.type.includes('Tablet')) {
+                                orderCost += unitCost * item.qty;
+                            } else {
+                                orderCost += costPerBox * item.qty;
+                            }
+                        }
+                        orderSellingPrice += item.price * item.qty; 
+                    });
+                }
+
+                const delivery = order.delivery_charge || (order.total - orderSellingPrice); 
+                const revenue = orderSellingPrice + delivery;
+                const profit = revenue - orderCost - delivery;
+
+                grandTotalCost += orderCost;
+                grandTotalSelling += orderSellingPrice;
+                grandTotalDelivery += delivery;
+                grandTotalRevenue += revenue;
+                grandTotalProfit += profit;
+
+                const date = new Date(order.created_at).toLocaleDateString('en-GB');
+                const profitClass = profit >= 0 ? 'profit-text' : 'loss-text';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${order.order_number}</strong></td>
+                        <td>${date}</td>
+                        <td>Rs. ${orderCost.toFixed(2)}</td>
+                        <td>Rs. ${orderSellingPrice}</td>
+                        <td>Rs. ${delivery}</td>
+                        <td style="font-weight:bold; color:#1a56db;">Rs. ${revenue}</td>
+                        <td class="${profitClass}">Rs. ${profit.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('accTotalCost').innerText = 'Rs. ' + grandTotalCost.toFixed(2);
+            document.getElementById('accTotalSelling').innerText = 'Rs. ' + grandTotalSelling;
+            document.getElementById('accTotalDelivery').innerText = 'Rs. ' + grandTotalDelivery;
+            document.getElementById('accTotalRevenue').innerText = 'Rs. ' + grandTotalRevenue;
+            document.getElementById('accTotalProfit').innerText = 'Rs. ' + grandTotalProfit.toFixed(2);
+        }
+
+        // ============ EXPORT DATA LOGIC ============
+        function exportCSV(type) {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            if (type === 'products') {
+                csvContent += "Name,Category,Cost Price,Selling Price,Stock Status\n";
+                allProductsList.forEach(prod => {
+                    csvContent += `"${prod.name}","${prod.category}",${prod.cost_price},${prod.price_per_unit},"${prod.stock_status}"\n`;
+                });
+            } else if (type === 'orders') {
+                csvContent += "Order Number,Customer Name,Phone,Address,Total,Status,Date\n";
+                allOrders.forEach(order => {
+                    csvContent += `"${order.order_number}","${order.customer_name}","${order.phone}","${order.address}",${order.total},"${order.status}","${new Date(order.created_at).toLocaleDateString()}"\n`;
+                });
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${type}_data.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ============ PRINT SLIP LOGIC ============
+        function openPrintSlip(orderNumber) {
+            const order = allOrders.find(o => o.order_number === orderNumber);
+            if (!order) return;
+
+            let itemsHtml = '';
+            let subTotal = 0;
+            order.items.forEach(item => {
+                const itemTotal = item.price * item.qty;
+                subTotal += itemTotal;
+                itemsHtml += `<tr><td>${item.qty}x ${item.name} (${item.type || ''})</td><td style="text-align:right;">Rs. ${itemTotal.toFixed(2)}</td></tr>`;
+            });
+
+            const delivery = order.delivery_charge || 200;
+            const discount = 0; 
+
+            const slipHtml = `
+                <h2>THE MEDICAL STORE</h2>
+                <p style="text-align:center;">${currentSettings.address || ''}</p>
+                <p style="text-align:center;">Phone: ${currentSettings.phone || ''}</p>
+                <hr>
+                <p><strong>Order:</strong> ${order.order_number}</p>
+                <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+                <p><strong>Customer:</strong> ${order.customer_name}</p>
+                <p><strong>Phone:</strong> ${order.phone}</p>
+                <p><strong>Address:</strong> ${order.address}</p>
+                <hr>
+                <table>
+                    <thead><tr><th>Item</th><th style="text-align:right;">Price</th></tr></thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+                <hr>
+                <table style="width:100%; font-size:12px;">
+                    <tr><td>Subtotal:</td><td style="text-align:right;">Rs. ${subTotal.toFixed(2)}</td></tr>
+                    <tr><td>Delivery Charges:</td><td style="text-align:right;">Rs. ${delivery}</td></tr>
+                    <tr><td>Discount:</td><td style="text-align:right;">Rs. ${discount.toFixed(2)}</td></tr>
+                    <tr style="font-weight:bold; border-top: 1px solid #000;"><td>Total:</td><td style="text-align:right;">Rs. ${order.total.toFixed(2)}</td></tr>
+                </table>
+                <hr>
+                <p style="text-align:center; font-size: 10px; margin-top: 10px;">Thank you for shopping!</p>
+            `;
+            
+            document.getElementById('slipContent').innerHTML = slipHtml;
+            document.getElementById('slipModal').classList.add('show');
+        }
+
+        async function logout() { await supabaseClient.auth.signOut(); }
+        checkUser();
+    </script>
+</body>
+</html>
